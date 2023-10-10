@@ -14,6 +14,8 @@ function App() {
   const [areas, setAreas] = useState([]);
 
   function handleUpdateHost(hostObj) {
+    // console.log('in App, handleUpdateHost, hostObj: ', hostObj);
+
     setHosts(hosts.map(hostElem => {
       if (hostElem.id === hostObj.id) {
         return hostObj;
@@ -33,7 +35,7 @@ function App() {
     .then(data => setAreas([...data]));
   }, []);
 
-  console.log('in App, areas: ', areas, 'hosts: ', hosts);
+  // console.log('in App, areas: ', areas, 'hosts: ', hosts);
 
   return (
     <Segment id="app">
@@ -43,8 +45,9 @@ function App() {
       <WestworldMap areas={areas} 
         hosts={hosts} 
         selectedHostId={selectedHostId} onSetSelectedHostId={setSelectedHostId} />
-      <Headquarters hosts={hosts} selectedHostId={selectedHostId} onSetSelectedHostId={setSelectedHostId}
-        onUpdateHost={handleUpdateHost} areas={areas} />
+      <Headquarters hosts={hosts} onUpdateHost={handleUpdateHost} onSetHosts={setHosts} 
+        selectedHostId={selectedHostId} onSetSelectedHostId={setSelectedHostId}
+        areas={areas} />
     </Segment>
   );
 }

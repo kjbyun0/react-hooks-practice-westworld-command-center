@@ -10,7 +10,9 @@ import {
 } from "semantic-ui-react";
 import "../stylesheets/HostInfo.css";
 
-function HostInfo({ host, hosts, onUpdateHost, areas }) {
+import { Log } from "../services/Log";
+
+function HostInfo({ host, hosts, onUpdateHost, areas, onAddLog }) {
   // This state is just to show how the dropdown component works.
   // Options have to be formatted in this way (array of objects with keys of: key, text, value)
   // Value has to match the value in the object to render the right text.
@@ -32,14 +34,17 @@ function HostInfo({ host, hosts, onUpdateHost, areas }) {
     };
   });
 
-  console.log('in HostInfo, host area: ', host.area, ', options: ', options);
-  console.log('in HostInfo, host: ', host);
+  // console.log('in HostInfo, host area: ', host.area, ', options: ', options);
+  // console.log('in HostInfo, host: ', host);
 
   function handleOptionChange(e, { value }) {
     // the 'value' attribute is given via Semantic's Dropdown component.
     // Put a debugger or console.log in here and see what the "value" variable is when you pass in different options.
     // See the Semantic docs for more info: https://react.semantic-ui.com/modules/dropdown/#usage-controlled
 
+    // console.log('in HostInfo, handleOptionChange, e: ', e);
+
+    // To Check it area exceeds its limit.
     const currCnt = hosts.reduce((total, hostElem) => {
       if (hostElem.area === value) {
         return total + 1;
@@ -50,37 +55,48 @@ function HostInfo({ host, hosts, onUpdateHost, areas }) {
     const area = areas.find(areaElem => areaElem.name === value);
 
     if (currCnt >= area.limit) {
-      console.log("Can't change area. The area will exceed its limit!!!");
+      // console.log("Can't change area. The area will exceed its limit!!!");
+      onAddLog(Log.error(`Too many hosts. Cannot add ${host.firstName} to ${e.target.innerText}`));
       return;
     }
+    
+    // fetch(`http://localhost:3001/hosts/${host.id}`, {
+    //   method: 'PATCH',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({
+    //     area: value,
+    //   }),
+    // })
+    // .then(resp => resp.json())
+    // .then(data => onUpdateHost(data));
+    host.area = value;
+    onUpdateHost(host);
 
-    console.log('in Hostinfo, handleOptionChange, e: ', e, ', value: ', value);
-    fetch(`http://localhost:3001/hosts/${host.id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        area: value,
-      }),
-    })
-    .then(resp => resp.json())
-    .then(data => onUpdateHost(data));
+    onAddLog(Log.notify(`${host.firstName} set in area ${e.target.innerText}`));
   }
 
   function handleRadioChange() {
-    console.log("The radio button fired");
-    fetch(`http://localhost:3001/hosts/${host.id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        active: !host.active,
-      }),
-    })
-    .then(resp => resp.json())
-    .then(data => onUpdateHost(data));
+    // console.log("The radio button fired");
+    // fetch(`http://localhost:3001/hosts/${host.id}`, {
+    //   method: 'PATCH',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({
+    //     active: !host.active,
+    //   }),
+    // })
+    // .then(resp => resp.json())
+    // .then(data => onUpdateHost(data));
+
+    host.active = !host.active
+    onUpdateHost(host);
+
+    host.active ? 
+      onAddLog(Log.warn(`Activated ${host.firstName}`)) : 
+      onAddLog(Log.notify(`Decommissioned ${host.firstName}`));
   }
 
   return (
